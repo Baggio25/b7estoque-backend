@@ -11,3 +11,12 @@ export const login: RequestHandler = async (req, res) => {
 
   res.json({ error: null, data: result });
 }
+
+export const logout: RequestHandler = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if(authHeader) {
+    const [bearer, token] = authHeader.split(' ');
+  }
+
+  res.json({error: null, data: { message: 'Logout realizado com sucesso' }})
+}

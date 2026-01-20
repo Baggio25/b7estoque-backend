@@ -5,6 +5,10 @@ import { db } from "../db/connection";
 import { NewUser, User, users } from "../db/schema";
 import { AppError } from "../utils/app.error";
 
+export const logout = async (token: string) => {
+  
+}
+
 export const login = async (email: string, password: string) => {
   const user = await getUserByEmail(email);
   if(!user) return null;
