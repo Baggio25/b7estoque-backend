@@ -6,7 +6,10 @@ import { NewUser, User, users } from "../db/schema";
 import { AppError } from "../utils/app.error";
 
 export const logout = async (token: string) => {
-  
+  await db
+    .update(users)
+    .set({ token: null, updatedAt: new Date() })
+    .where(eq(users.token, token));
 }
 
 export const login = async (email: string, password: string) => {

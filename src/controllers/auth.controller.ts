@@ -15,7 +15,10 @@ export const login: RequestHandler = async (req, res) => {
 export const logout: RequestHandler = async (req, res) => {
   const authHeader = req.headers.authorization;
   if(authHeader) {
-    const [bearer, token] = authHeader.split(' ');
+    const [_, token] = authHeader.split(' ');
+    if(token) {
+      await userService.logout(token);
+    }
   }
 
   res.json({error: null, data: { message: 'Logout realizado com sucesso' }})
