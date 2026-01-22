@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { db } from "../db/connection";
@@ -38,16 +38,16 @@ export const logout = async (token: string) => {
     .update(users)
     .set({ token: null, updatedAt: new Date() })
     .where(eq(users.token, token));
-}
+};
 
 export const login = async (email: string, password: string) => {
   const user = await getUserByEmail(email);
-  if(!user) return null;
+  if (!user) return null;
 
   const isPasswordValid = await verifyPassword(password, user.password);
-  if(!isPasswordValid) return null;
+  if (!isPasswordValid) return null;
 
-  const token = crypto.randomBytes(32).toString('hex');
+  const token = crypto.randomBytes(32).toString("hex");
   await db
     .update(users)
     .set({ token, updatedAt: new Date() })
@@ -56,9 +56,9 @@ export const login = async (email: string, password: string) => {
   const userFormatted = formatUser(user);
   return {
     ...userFormatted,
-    token
+    token,
   };
-}
+};
 
 export const createUser = async (data: NewUser) => {
   const existingUser = await getUserByEmail(data.email);
@@ -74,6 +74,17 @@ export const createUser = async (data: NewUser) => {
   const user = result[0];
 
   return formatUser(user);
+};
+
+export const listUsers = async (offset: number = 0, limit: number = 10) => {
+  const userList = await db
+    .select()
+    .from(users)
+    .where(isNull(users.deletedAt))
+    .offset(offset)
+    .limit(limit);
+
+  return userList.map(formatUser);
 };
 
 export const getUserByEmail = async (email: string) => {
@@ -95,7 +106,7 @@ export const hashPassword = async (password: string) => {
 
 export const verifyPassword = async (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
-}
+};
 
 export const formatUser = (user: User) => {
   const { password, ...userWithoutPassword } = user;
@@ -105,5 +116,5 @@ export const formatUser = (user: User) => {
 
   const { id, name, email, avatar, isAdmin } = userWithoutPassword;
 
-  return { id, name, email, avatar, isAdmin }; 
+  return { id, name, email, avatar, isAdmin };
 };

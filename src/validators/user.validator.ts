@@ -7,3 +7,8 @@ export const createUserSchema = z.object({
     .min(6, "E-mail deve conter pelo menos 6 dígitos"),
   password: z.string().min(6, "Senha deve conter pelo menos 6 dígitos"),
 });
+
+export const listUsersSchema = z.object({
+  offset: z.coerce.number().int().min(0).optional().default(0),
+  limit: z.coerce.number().int().min(1).optional().default(10),
+});
