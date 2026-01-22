@@ -5,6 +5,21 @@ import { db } from "../db/connection";
 import { NewUser, User, users } from "../db/schema";
 import { AppError } from "../utils/app.error";
 
+export const getUserByIdPublic = async (id: string) => {
+  const user = await getUserById(id);
+  if (!user) return null;
+  return formatUser(user);
+};
+
+export const getUserById = async (id: string) => {
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+
+  const user = result[0];
+  if (!user) return null;
+
+  return user;
+};
+
 export const validateToken = async (token: string) => {
   const result = await db
     .select()
@@ -88,5 +103,7 @@ export const formatUser = (user: User) => {
   if (userWithoutPassword.avatar)
     userWithoutPassword.avatar = `${process.env.BASE_URL}/static/avatars${userWithoutPassword.avatar}`;
 
-  return userWithoutPassword;
+  const { id, name, email, avatar, isAdmin } = userWithoutPassword;
+
+  return { id, name, email, avatar, isAdmin }; 
 };
