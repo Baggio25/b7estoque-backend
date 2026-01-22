@@ -16,3 +16,21 @@ export const listUsersSchema = z.object({
 export const userIdSchema = z.object({
   id: z.uuid("Formato de ID do usuário inválido"),
 });
+
+export const updateUserSchema = z.object({
+  name: z
+    .string()
+    .min(3, "Nome deve conter pelo menos 3 dígitos")
+    .max(255)
+    .optional(),
+  email: z
+    .email("E-mail está com formato inválido")
+    .min(6, "E-mail deve conter pelo menos 6 dígitos")
+    .optional(),
+  password: z
+    .string()
+    .min(6, "Senha deve conter pelo menos 6 dígitos")
+    .optional(),
+  isAdmin: z.boolean().optional(),
+  avatar: z.string().nullable().optional(),
+});

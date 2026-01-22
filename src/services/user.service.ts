@@ -76,6 +76,34 @@ export const createUser = async (data: NewUser) => {
   return formatUser(user);
 };
 
+export const updateUser = async (id: string, data: Partial<NewUser>) => {
+  const userToUpdate = await getUserById(id);
+  if (!userToUpdate) throw new AppError("Usuário não encontrado", 404);
+
+  if (data.email && data.email !== userToUpdate.email) {
+    const emailInUse = await getUserByEmail(data.email, true);
+    if (emailInUse) throw new AppError("E-mail já está em uso", 400);
+  }
+
+  const updateData: Partial<NewUser> = { ...data };
+  if (data.password) {
+    updateData.password = await hashPassword(data.password);
+  }
+
+  updateData.updatedAt = new Date();
+
+  const result = await db
+    .update(users)
+    .set(updateData)
+    .where(eq(users.id, id))
+    .returning();
+
+  const user = result[0];
+  if (!user) return null;
+
+  return formatUser(user);
+};
+
 export const deleteUser = async (id: string) => {
   const result = await db
     .update(users)
@@ -97,7 +125,10 @@ export const listUsers = async (offset: number = 0, limit: number = 10) => {
   return userList.map(formatUser);
 };
 
-export const getUserByEmail = async (email: string) => {
+export const getUserByEmail = async (
+  email: string,
+  includeDeleted: boolean = false,
+) => {
   const result = await db
     .select()
     .from(users)
@@ -105,7 +136,8 @@ export const getUserByEmail = async (email: string) => {
     .limit(1);
 
   const user = result[0];
-  if (!user || user.deletedAt) return null;
+  if (!user) return null;
+  if (user && user.deletedAt && includeDeleted === false) return null;
 
   return user;
 };
