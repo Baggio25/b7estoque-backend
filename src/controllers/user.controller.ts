@@ -7,6 +7,7 @@ import {
 } from "../validators/user.validator";
 import * as userService from "../services/user.service";
 import { AppError } from "../utils/app.error";
+import { saveAvatar } from "../services/file.service";
 
 export const createUser: RequestHandler = async (req, res) => {
   const data = createUserSchema.parse(req.body);
@@ -41,7 +42,17 @@ export const deleteUser: RequestHandler = async (req, res) => {
 export const updateUser: RequestHandler = async (req, res) => {
   const { id } = userIdSchema.parse(req.params);
   const data = updateUserSchema.parse(req.body);
-  const updatedUser = await userService.updateUser(id, data);
 
+  let avatarFileName: string | undefined;
+  if (req.file) {
+    avatarFileName = await saveAvatar(req.file.buffer, req.file.originalname);
+  }
+
+  const updateData = { ...data };
+  if (avatarFileName) {
+    updateData.avatar = avatarFileName;
+  }
+
+  const updatedUser = await userService.updateUser(id, updateData);
   res.status(200).json({ error: null, data: updatedUser });
 };

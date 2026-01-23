@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { db } from "../db/connection";
 import { NewUser, User, users } from "../db/schema";
 import { AppError } from "../utils/app.error";
+import { deleteAvatar } from "./file.service";
 
 export const getUserByIdPublic = async (id: string) => {
   const user = await getUserById(id);
@@ -88,6 +89,14 @@ export const updateUser = async (id: string, data: Partial<NewUser>) => {
   const updateData: Partial<NewUser> = { ...data };
   if (data.password) {
     updateData.password = await hashPassword(data.password);
+  }
+
+  if (
+    data.avatar &&
+    userToUpdate.avatar &&
+    data.avatar !== userToUpdate.avatar
+  ) {
+    await deleteAvatar(userToUpdate.avatar);
   }
 
   updateData.updatedAt = new Date();
