@@ -3,6 +3,7 @@ import {
   categoryIdSchema,
   createCategorySchema,
   listCategorySchema,
+  updateCategorySchema,
 } from "../validators/category.validator";
 import * as categoryService from "../services/category.service";
 import { AppError } from "../utils/app.error";
@@ -27,4 +28,14 @@ export const getCategoryById: RequestHandler = async (req, res) => {
   if (!category) throw new AppError("Categoria não encontrada", 404);
 
   res.status(200).json({ error: null, data: category });
+};
+
+export const updateCategory: RequestHandler = async (req, res) => {
+  const { id } = categoryIdSchema.parse(req.params);
+  const data = updateCategorySchema.parse(req.body);
+
+  const updatedCategory = await categoryService.updateCategory(id, data);
+  if (!updatedCategory) throw new AppError("Categoria não encontrada", 404);
+
+  res.status(200).json({ error: null, data: updatedCategory });
 };
