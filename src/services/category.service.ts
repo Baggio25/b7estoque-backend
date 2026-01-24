@@ -1,6 +1,7 @@
-import { eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../db/connection";
 import { categories, NewCategory, products } from "../db/schema";
+import { AppError } from "../utils/app.error";
 
 export const createCategory = async (data: NewCategory) => {
   const result = await db.insert(categories).values(data).returning();
@@ -54,6 +55,29 @@ export const updateCategory = async (
   const result = await db
     .update(categories)
     .set(updateData)
+    .where(eq(categories.id, id))
+    .returning();
+
+  if (!result[0]) return null;
+  return result[0];
+};
+
+export const deleteCategory = async (id: string) => {
+  const existingProduct = await db
+    .select()
+    .from(products)
+    .where(and(eq(products.id, id), isNull(products.deletedAt)))
+    .limit(1);
+
+  if (existingProduct[0])
+    throw new AppError(
+      "Não é possível excluir uma categoria com produtos vinculados",
+      400,
+    );
+
+  const result = await db
+    .update(categories)
+    .set({ deletedAt: new Date() })
     .where(eq(categories.id, id))
     .returning();
 
