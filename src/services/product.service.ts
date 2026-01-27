@@ -1,5 +1,6 @@
+import { eq, ilike, isNull, sql } from "drizzle-orm";
 import { db } from "../db/connection";
-import { NewProduct, products } from "../db/schema";
+import { categories, NewProduct, products } from "../db/schema";
 
 import * as categoryService from "../services/category.service";
 import { AppError } from "../utils/app.error";
@@ -12,4 +13,36 @@ export const createProduct = async (data: NewProduct) => {
 
   if (!result[0]) return null;
   return result[0];
+};
+
+export const listProducts = async (
+  offset: number = 0,
+  limit: number = 10,
+  name?: string,
+) => {
+  const whereCondition = name
+    ? sql`${products.deletedAt} IS NULL AND ${ilike(products.name, `%${name}%`)}`
+    : isNull(products.deletedAt);
+
+  const productsList = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      categoryId: products.categoryId,
+      categoryName: categories.name,
+      unitPrice: products.unitPrice,
+      unitType: products.unitPrice,
+      quantity: products.quantity,
+      minimumQuantity: products.minimumQuantity,
+      maximumQuantity: products.maximumQuantity,
+      createdAt: products.createdAt,
+      updatedAt: products.updatedAt,
+    })
+    .from(products)
+    .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(whereCondition)
+    .offset(offset)
+    .limit(limit);
+
+  return productsList;
 };
