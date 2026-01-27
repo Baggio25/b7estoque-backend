@@ -1,4 +1,4 @@
-import { eq, ilike, isNull, sql } from "drizzle-orm";
+import { and, eq, ilike, isNull, sql } from "drizzle-orm";
 import { db } from "../db/connection";
 import { categories, NewProduct, products } from "../db/schema";
 
@@ -31,7 +31,7 @@ export const listProducts = async (
       categoryId: products.categoryId,
       categoryName: categories.name,
       unitPrice: products.unitPrice,
-      unitType: products.unitPrice,
+      unitType: products.unitType,
       quantity: products.quantity,
       minimumQuantity: products.minimumQuantity,
       maximumQuantity: products.maximumQuantity,
@@ -45,4 +45,28 @@ export const listProducts = async (
     .limit(limit);
 
   return productsList;
+};
+
+export const getProductByIdWithDetails = async (id: string) => {
+  const result = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      categoryId: products.categoryId,
+      categoryName: categories.name,
+      unitPrice: products.unitPrice,
+      unitType: products.unitType,
+      quantity: products.quantity,
+      minimumQuantity: products.minimumQuantity,
+      maximumQuantity: products.maximumQuantity,
+      createdAt: products.createdAt,
+      updatedAt: products.updatedAt,
+    })
+    .from(products)
+    .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(and(eq(products.id, id), isNull(products.deletedAt)))
+    .limit(1);
+
+  if (!result[0]) return null;
+  return result[0];
 };
