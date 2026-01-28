@@ -1,7 +1,36 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../db/connection";
 import { moves, NewMove, products } from "../db/schema";
 import { AppError } from "../utils/app.error";
+import { listMovesInput } from "../validators/move.validator";
+
+export const listMoves = async (filters: listMovesInput) => {
+  const conditions = [];
+
+  if (filters.productId) {
+    conditions.push(eq(moves.productId, filters.productId));
+  }
+
+  const movesList = await db
+    .select({
+      id: moves.id,
+      productId: moves.productId,
+      productName: products.name,
+      userId: moves.userId,
+      type: moves.type,
+      quantity: moves.quantity,
+      unitPrice: moves.unitPrice,
+      createdAt: moves.createdAt,
+    })
+    .from(moves)
+    .leftJoin(products, eq(moves.productId, products.id))
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(sql`${moves.createdAt} DESC`)
+    .offset(filters.offset)
+    .limit(filters.limit);
+
+  return movesList;
+};
 
 export const addMove = async (data: Omit<NewMove, "unitPrice">) => {
   return await db.transaction(async (tx) => {
