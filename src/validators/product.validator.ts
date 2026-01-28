@@ -37,6 +37,36 @@ export const createProductSchema = z
     },
   );
 
+export const updateProductSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório").max(255).optional(),
+  categoryId: z.uuid("Formato de ID da categoria inválido").optional(),
+  unitPrice: z.coerce
+    .number()
+    .min(0, "Valor unitário deve ser positiva")
+    .default(0)
+    .optional()
+    .transform(String),
+  unitType: unitTypeEnum.optional(),
+  quantity: z.coerce
+    .number()
+    .min(0, "Quantidade deve ser positiva")
+    .default(0)
+    .optional()
+    .transform(String),
+  minimumQuantity: z.coerce
+    .number()
+    .min(0, "Quantidade deve ser positiva")
+    .default(0)
+    .optional()
+    .transform(String),
+  maximumQuantity: z.coerce
+    .number()
+    .min(0, "Quantidade deve ser positiva")
+    .default(0)
+    .optional()
+    .transform(String),
+});
+
 export const listProductsSchema = z.object({
   name: z
     .string()

@@ -3,6 +3,7 @@ import {
   createProductSchema,
   getProductByIdSchema,
   listProductsSchema,
+  updateProductSchema,
 } from "../validators/product.validator";
 import * as productService from "../services/product.service";
 import { AppError } from "../utils/app.error";
@@ -27,4 +28,13 @@ export const getProductById: RequestHandler = async (req, res) => {
   if (!product) throw new AppError("Produto não encontrado", 404);
 
   res.status(200).json({ error: null, data: product });
+};
+
+export const updateProduct: RequestHandler = async (req, res) => {
+  const { id } = getProductByIdSchema.parse(req.params);
+  const data = updateProductSchema.parse(req.body);
+  const updatedProduct = await productService.updateProduct(id, data);
+  if (!updateProduct) throw new AppError("Produto não encontrado", 404);
+
+  res.status(200).json({ error: null, data: updatedProduct });
 };

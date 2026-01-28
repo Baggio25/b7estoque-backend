@@ -70,3 +70,20 @@ export const getProductByIdWithDetails = async (id: string) => {
   if (!result[0]) return null;
   return result[0];
 };
+
+export const updateProduct = async (id: string, data: Partial<NewProduct>) => {
+  if (data.categoryId) {
+    const category = await categoryService.getCategoryById(data.categoryId);
+    if (!category) throw new AppError("Categoria não encontrada", 404);
+  }
+
+  const updateData = { ...data, updatedAt: new Date() };
+  const result = await db
+    .update(products)
+    .set(updateData)
+    .where(eq(products.id, id))
+    .returning();
+
+  if (!result[0]) return null;
+  return result[0];
+};
