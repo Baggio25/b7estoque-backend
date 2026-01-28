@@ -38,3 +38,11 @@ export const updateProduct: RequestHandler = async (req, res) => {
 
   res.status(200).json({ error: null, data: updatedProduct });
 };
+
+export const deleteProduct: RequestHandler = async (req, res) => {
+  const { id } = getProductByIdSchema.parse(req.params);
+  const deletedProduct = await productService.deleteProduct(id);
+  if (!deleteProduct) throw new AppError("Produto não encontrado", 404);
+
+  res.status(200).json({ error: null, data: null });
+};
