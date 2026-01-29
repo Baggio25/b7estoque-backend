@@ -20,3 +20,8 @@ export const getMovesGraph: RequestHandler = async (req, res) => {
   const data = await dashboardService.getMovesGraph(query);
   res.status(200).json({ error: null, data });
 };
+
+export const getLowStock: RequestHandler = async (req, res) => {
+  const data = await dashboardService.getLowStock();
+  res.status(200).json({ error: null, data });
+};
